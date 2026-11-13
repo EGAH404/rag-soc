@@ -4,8 +4,6 @@ from typing import Optional , Any, Dict, List, Literal #décider précisément t
 from enum import Enum #meilleure lisibilité pour les constantes
 from pydantic import BaseModel, Field, field_validator, ConfigDict
 
-mon_uuid = uuid4() #uuid aléatoire v4=(128 bits aléatoires)
-
 # ==========================================
 # 1. ÉNUMÉRATIONS (ROLES, TYPES)
 # ==========================================
@@ -74,7 +72,7 @@ class CleanedDocuments(BaseModel):
     raw_doc_type: DocumentType = Field(..., description="Format d'origine du document brut")
 
     # Contenus sans PII
-    cleaned_doc_content: str = Field(..., description="Contenu nsans PII (données sensibles sont remplacées par des balises)")
+    cleaned_doc_content: str = Field(..., description="Contenu sans PII (données sensibles sont remplacées par des balises)")
 
     # audit de trail de l'anonymisation
     pii_stats: Dict[str, int] = Field(default_factory=dict, description="Comptage des éléments masqués (ex: {'IP\_PRIVATE': 3, 'EMAIL': 1}")
@@ -83,7 +81,7 @@ class CleanedDocuments(BaseModel):
     cleaned_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="date heure UTC anonymisation")
 
     # Heritage des roles autorisés à accéder au document nettoyé
-    allowed_roles: List[UserRole] = Field(default=[UserRole.ANALYSTE_N1, UserRole.ANALYSTE_N2, UserRole.ANALYSTE_N3], description="Roles autorisés à accéder au aux futures chunks issus du document nettoyé")
+    allowed_roles: List[UserRole] = Field(default=[UserRole.ANALYSTE_N1, UserRole.ANALYSTE_N2, UserRole.ANALYSTE_N3], description="Roles autorisés à accéder au aux futurs chunks issus du document nettoyé")
 
     metadata: Dict[str, Any] = Field( default_factory=dict, description="Métadonnées enrichies (source, tag MITRE, statut d'audit)" )
 
