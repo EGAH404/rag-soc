@@ -50,8 +50,8 @@ class RawDocuments(BaseModel):
 
     # config pydantic v2
     model_config = ConfigDict(
-        use_enum_values = True # permet de sérialiser les enums en chaines ordinaires plutôt qu'en objets Enum
-        validate_assignment = True # permet de valider les types en cas de modification d'attribus
+        use_enum_values = True, # permet de sérialiser les enums en chaines ordinaires plutôt qu'en objets Enum
+        validate_assignment = True, # permet de valider les types en cas de modification d'attribus
         extra = "forbid" # Rejette tout champs non déclaré (sécurité)
     )
 
