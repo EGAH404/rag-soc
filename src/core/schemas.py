@@ -29,4 +29,6 @@ class Rawdocuments:
     """représentation des documents bruts (raw) avant anonymisation et chunking"""
     # ID unique du document
     doc_id: str = Field(default_factory=lambda: str(uuid4()), description="Identifiant unique du document")
-    
+
+    # Chemin ou URI du document brut
+    source_path: str = Field(..., description="Chemin source du document brut")
