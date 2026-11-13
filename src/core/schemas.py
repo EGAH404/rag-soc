@@ -96,3 +96,50 @@ class CleanedDocuments(BaseModel):
         if not v or not v.strip(): 
             raise ValueError("Le texte anonymisé ne peut pas être vide.") 
         return v
+
+class Chunk(BaseModel):
+    """
+    Unité élémentaire de recherche indexée dans Qdrant. 
+    Produit par le chunking, enrichi par l'embedding, et filtré par les rôles RBAC.
+    """
+    # ID unique du chunk
+    chunk_id: str= Field(default_factory=lambda: str(uuid4()), description="Identifiant unique du chunk")
+
+    # tracabilité vers le document nettoyé
+    cleaned_doc_id: str = Field(..., description="identifiant du document nettoyé d'origine")
+
+    # position séquentielle du chunk dans le doc
+    chunk_index: int = Field(..., ge=0,description="Index du chunk dans le document nettoyé (0-based)")
+
+    # contenu textuel
+    chunk_content: str = Field(..., description="segment de text pret pour l'indexation")
+
+    # Vecteurs Qdrant remplissage par Jérome
+    dense_vector: Optional[List[float]] = Field(default=None, description="Embedding dense bge-m3 (dimension 1024)")
+    sparse_vector: Optional[Dict[int, float]] = Field(default=None, description="Vecteur creux optionnel pour la recherche lexicale/hybride BM25")
+
+    # sécurité et filtrage RBAC
+    allowed_roles: List[UserRole] = Field(default=[UserRole.ANALYSTE_N1, UserRole.ANALYSTE_N2, UserRole.ANALYSTE_N3], description="Roles autorisés recuperer chunk lors de recherche vectorielle")
+
+    # Métadonnées de charge utile (payload) 
+    metadata: Dict[str, Any] = Field( default_factory=dict, description="Métadonnées d'indexation (titre, type de règle, tag MITRE, etc.)" ) 
+
+    model_config = ConfigDict( use_enum_values=True, validate_assignment=True, extra="forbid" )
+
+    @field_validator("chunk_content")
+    @classmethod
+    def validate_chunk_content_not_empty(cls, v: str) -> str:
+        """S'assure que le contenu du chunk n'est pas vide."""
+        if not v or not v.strip():
+            raise ValueError("Le contenu du chunk ne peut pas être vide.")
+        return v
+
+    @field_validator("dense_vector")
+    @classmethod
+    def validate_dense_vector_dimension(cls, v: Optional[List[float]]) -> Optional[List[float]]:
+        """S'assure que le vecteur dense a la dimension correcte (1024)."""
+        if v is not None and len(v) != 1024:
+            raise ValueError(f"La dimension du vecteur dense ({len(v)}) est invalide. Attendu : 1024 pour bge-m3.")
+        return v
+
+    
