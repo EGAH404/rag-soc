@@ -26,3 +26,54 @@ class Anonymizer:
         re.compile(r"(?i)(?:[a-zA-Z]:\\(?:users|utilisateurs)\\)([a-zA-Z0-9._-]+)"),  # Emails
         re.compile(r"(?i)(?:/home/)([a-zA-Z0-9._-]+)")
     ]
+
+    def __init__(self):
+        pass  # Aucun état interne nécessaire pour l'instant
+
+    def _mask_email(self, text: str) -> str:
+        """Remplissage des adresses e-mail par <EMAIL>"""
+        mathces= self.EMAIL_PATTERN.findall(text)
+        count= len(mathces)
+        sanitized_text= self.EMAIL_PATTERN.sub("<EMAIL>", text)
+        return sanitized_text, count
+
+    def _mask_private_ip(self, text: str) -> str:
+        """
+        Remplace uniquement les adresses IP privées (RFC 1918 / Loopback) par <PRIVATE_IP>
+        Conserve les adresses IP publiques nécessaires à la Threat Intelligence
+        """
+        count = 0
+
+        def replace_ip(match: re.Match) -> str:
+            nonlocal count
+            ip_str = match.group(0)
+            try:
+                ip_obj = ipaddress.ip_address(ip_str)
+                if ip_obj.is_private or ip_obj.is_loopback:
+                    count += 1
+                    return "<PRIVATE_IP>"
+                return ip_str # Conserve les IP publiques pour VirusTotal/AbuseIPDB
+            except ValueError:
+                return ip_str
+        sanitized_text = self.IPV4_PATTERN.sub(replace_ip, text)
+        return sanitized_text, count
+
+    def _mask_user(self, text: str) -> tuple[str, int]:
+        """Remplace les noms d'utilisateurs par <USER>"""
+        count = 0
+        sanitized_text = text
+
+        for pattern in self.USER_PATTERNS:
+            def replace_user(match: re.Match) -> str:
+                nonlocal count
+                count += 1
+                full_match = match.group(0)
+                captured = match.group(1)
+                return full_match.replace(captured, "<USER>")
+
+            sanitized_text = pattern.sub(replace_user, sanitized_text)
+        return sanitized_text, count
+
+    
+
+    
