@@ -74,6 +74,27 @@ class Anonymizer:
             sanitized_text = pattern.sub(replace_user, sanitized_text)
         return sanitized_text, count
 
-    
+    def anonymize_text(self, text: str) -> tuple[str, Dict[str, int]]:
+        """
+        Applique toutes les règles d'assainissement sur une chaîne de caractères brute. 
+        Retourne le texte anonymisé et les statistiques d'audit. 
+        """
+        stats: Dict[str, int] = {}
 
+        # Masquage des e-mails
+        text, email_count = self._mask_email(text)
+        if email_count > 0:
+            stats["EMAIL"] = email_count
+
+        # Masquage des adresses IP privées
+        text, ip_count = self._mask_private_ip(text)
+        if ip_count > 0: 
+            stats["IP_PRIVATE"] = ip_count
+
+        # Masquage des noms d'utilisateurs
+        text, user_count = self._mask_user(text)
+        if user_count > 0:
+            stats["USER"] = user_count
+
+        return text, stats
     
