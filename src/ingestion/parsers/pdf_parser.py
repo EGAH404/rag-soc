@@ -22,6 +22,44 @@ class PDFParser:
         pdf_path: str | Path,
         allowed_roles: Optional[List[UserRole]] = None,
         custom_metadata: Optional[dict] = None
-    ) -> RawDocuments
-    
-         
+    ) -> RawDocuments:
+        """Lit un PDF et le transforme en RawDocuments contenant du Markdown.
+        Args:
+            pdf_path: Chemin vers le fichier pdf_path
+            allowed_roles: Liste des rôles RBAC autorisés. 
+            custom_metadata: Métadonnées additionnelles. 
+
+        Returns: 
+            Instance de RawDocuments avec le contenu en Markdown. 
+            """
+        path = Path(pdf_path)
+
+        if not path.exists():
+            raise FileNotFoundError(f"Fichier PDF introuvable : {pdf_path}")
+        if path.suffix.lower() != ".pdf":
+            raise ValueError(f"Le fichier n'est pas un PDF valide : {pdf_path}")
+
+        # Conversion du PDF en Markdown avec PyMuPDF4llm
+        md_text = pymupdf4llm.to_markdown(
+            doc = str(path),
+            write_images = self.write_images
+        )
+
+        if not md_text or not md_text.strip():
+            raise ValueError(f"Le fichier PDF {path.name} ne contient aucun texte extractible.")
+
+        roles = allowed_roles or [UserRole.ANALYSTE_N1]
+
+        metadata = {
+            "file_name": path.name, 
+            "file_size_bytes": path.stat().st_size, 
+            "parser": "pymupdf4llm", **(custom_metadata or {}),
+        }
+
+        return RawDocuments(
+            doc_path=str(path),
+            doc_type=DocumentType.PDF,
+            doc_content=md_text,
+            allowed_roles=roles,
+            matadata=metadata,
+        )
