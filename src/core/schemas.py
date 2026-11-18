@@ -75,7 +75,7 @@ class CleanedDocuments(BaseModel):
     cleaned_doc_content: str = Field(..., description="Contenu sans PII (données sensibles sont remplacées par des balises)")
 
     # audit de trail de l'anonymisation
-    pii_stats: Dict[str, int] = Field(default_factory=dict, description="Comptage des éléments masqués (ex: {'IP\_PRIVATE': 3, 'EMAIL': 1}")
+    pii_stats: Dict[str, int] = Field(default_factory=dict, description="Comptage des éléments masqués (ex: {'IP_PRIVATE': 3, 'EMAIL': 1}")
 
     # Horodatage de l'anonymisation
     cleaned_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="date heure UTC anonymisation")

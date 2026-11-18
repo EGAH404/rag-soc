@@ -61,5 +61,5 @@ class PDFParser:
             doc_type=DocumentType.PDF,
             doc_content=md_text,
             allowed_roles=roles,
-            matadata=metadata,
+            metadata=metadata,
         )
