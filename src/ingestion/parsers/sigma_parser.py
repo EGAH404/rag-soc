@@ -43,3 +43,5 @@ class SigmaParser:
             
         if not isinstance(data, dict): 
             raise ValueError(f"Le fichier {path.name} ne contient pas une règle Sigma valide.")
+
+        # 2.
